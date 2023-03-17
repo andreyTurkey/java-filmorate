@@ -50,7 +50,7 @@ public class UserLogicTest {
     }
 
     @Test
-    void createFailMail() throws InvalidDatesException {
+    void createFailMail()  {
         try {
             create(userFailMail);
         } catch (InvalidDatesException e) {
@@ -60,7 +60,7 @@ public class UserLogicTest {
     }
 
     @Test
-    void createFailLogin() throws InvalidDatesException {
+    void createFailLogin()  {
         try {
             create(userFailLogin);
         } catch (InvalidDatesException e) {
@@ -70,7 +70,7 @@ public class UserLogicTest {
     }
 
     @Test
-    void createFailBirthday() throws InvalidDatesException {
+    void createFailBirthday()  {
         try {
             create(userFailBirthday);
         } catch (InvalidDatesException e) {

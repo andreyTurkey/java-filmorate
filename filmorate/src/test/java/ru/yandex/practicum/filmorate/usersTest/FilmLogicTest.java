@@ -118,7 +118,7 @@ public class FilmLogicTest {
     }
 
     @Test
-    void createFailRelease() throws InvalidDatesException {
+    void createFailRelease()  {
 
         Film film = Film.builder()
                 .name("Titanic")
