@@ -15,6 +15,7 @@
 	<description>filmorate</description>
 	<properties>
 		<java.version>11</java.version>
+		<spring-boot.repackage.skip>true</spring-boot.repackage.skip>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -44,7 +45,7 @@
 
 	<build>
 		<defaultGoal>install</defaultGoal>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -54,9 +55,6 @@
 						<goals>
 							<goal>repackage</goal>
 						</goals>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
