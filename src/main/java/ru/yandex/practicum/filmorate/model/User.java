@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 @Data
@@ -21,7 +23,7 @@ public class User {
     String email;
 
     @NonNull
-    @NotBlank(message = "LOGIN can't be empty or consist of spaces.")
+    @Pattern(regexp="^\\S+$", message="LOGIN can't consist of spaces.")
     String login;
 
     String name;
