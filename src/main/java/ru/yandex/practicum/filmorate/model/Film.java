@@ -7,10 +7,11 @@ import ru.yandex.practicum.filmorate.customValidator.MinimumDate;
 import javax.validation.constraints.*;
 import java.time.*;
 
+import java.util.Set;
+
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@EqualsAndHashCode(exclude = {"id"})
 public class Film {
     static final LocalDate EARLY_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
@@ -31,4 +32,6 @@ public class Film {
     @NonNull
     @Positive(message = "DURATION should be positive.")
     int duration;
+
+    private Set<Integer> likes;
 }

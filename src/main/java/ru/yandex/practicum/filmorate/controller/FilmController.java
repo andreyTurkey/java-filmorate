@@ -1,80 +1,86 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.InvalidDataException;
+
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Validated
 @RestController
 @Slf4j
 @RequestMapping("/films")
 public class FilmController {
-    private int count = 0;
-    private Map<Integer, Film> films = new HashMap<>();
+
+    FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @PostMapping
     public ResponseEntity<Film> add(@Valid @RequestBody Film film) {
-        count++;
-        film.setId(count);
-        films.put(film.getId(), film);
+        filmService.create(film);
         log.debug(film.getName() + " was added");
         return ResponseEntity.ok(film);
     }
 
     @GetMapping
     public List<Film> getFilms() {
-        List<Film> films1 = new ArrayList<>(films.values());
         log.debug("Request all films was executed.");
-        return films1;
+        return filmService.getAllFilms();
+    }
+
+    @GetMapping(value = "{id}")
+    public Film getFilmById(@PathVariable Integer id) {
+        log.debug("Request film was executed.");
+        return filmService.getFilmById(id);
+    }
+
+    @GetMapping("popular")
+    public List<Film> getFilmByRating(@RequestParam(defaultValue = "10", required = false) Integer count) {
+        log.debug("Request films was executed.");
+        return filmService.getFilmByRating(count);
     }
 
     @PutMapping
-    public ResponseEntity<Film> update(@Valid @RequestBody Film film) throws InvalidDataException {
-        if (!films.containsKey(film.getId())) {
-            log.error(film.getName() + " film doesn't exist.");
-            throw new InvalidDataException("Check ID field.");
-        }
-        film.setId(count);
-        films.put(film.getId(), film);
+    public ResponseEntity<Film> update(@Valid @RequestBody Film film) {
+        filmService.update(film);
         return ResponseEntity.ok(film);
     }
 
-    @ControllerAdvice
-    public class AwesomeExceptionHandler {
+    @DeleteMapping(value = "{id}/like/{userId}")
+    public ResponseEntity<Film> deleteLike(@PathVariable Integer id,
+                                           @PathVariable Integer userId) {
+        filmService.deleteLike(id, userId);
+        return ResponseEntity.ok(filmService.getFilmById(id));
+    }
 
-        @ResponseBody
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        protected ResponseEntity<AwesomeException> handleThereIsNoSuchValidationFilm(MethodArgumentNotValidException ex) {
-            log.error("Invalid fields");
-            return new ResponseEntity<>(new FilmController
-                    .AwesomeExceptionHandler
-                    .AwesomeException(ex.getFieldError().getDefaultMessage())
-                    , HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @DeleteMapping("delete")
+    public List<Film> deleteFilms() {
+        filmService.deleteFilms();
+        return new ArrayList<>(filmService.getFilms().values());
+    }
 
-        @ResponseBody
-        @ExceptionHandler(InvalidDataException.class)
-        protected ResponseEntity<AwesomeException> handleThereIsNoSuchExceptionInController(InvalidDataException e) {
-            return new ResponseEntity<>(new AwesomeException(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @DeleteMapping("delete/{id}")
+    public List<Film> deleteFilmById(@PathVariable Integer id) {
+        filmService.deleteFilmById(id);
+        return new ArrayList<>(filmService.getFilms().values());
+    }
 
-        @Data
-        @AllArgsConstructor
-        private class AwesomeException {
-            private String message;
-        }
+    @PutMapping(value = "{id}/like/{userId}")
+    public ResponseEntity<Film> addLike(@PathVariable Integer id,
+                                        @PathVariable Integer userId) {
+        filmService.addLike(id, userId);
+        return ResponseEntity.ok(filmService.getFilmById(id));
     }
 }
