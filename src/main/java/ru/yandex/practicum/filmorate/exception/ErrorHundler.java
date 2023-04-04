@@ -29,7 +29,6 @@ public class ErrorHundler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ErrorResponse> handleThereIsNoSuchUserException(MethodArgumentNotValidException ex) {
         log.error("Invalid fields");
-        return new ResponseEntity<>(new ErrorResponse(ex.getFieldError().getDefaultMessage())
-                , HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ErrorResponse(ex.getFieldError().getDefaultMessage()), HttpStatus.BAD_REQUEST);
     }
 }
