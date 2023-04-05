@@ -52,7 +52,7 @@ public class FilmService implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        if (!filmStorage.getFilms().containsKey(film.getId())) {
+        if (!ifFilmExists(film.getId())) {
             log.error(film.getName() + " film doesn't exist.");
             throw new UserNotFoundException("Check ID field.");
         }
@@ -81,7 +81,7 @@ public class FilmService implements FilmStorage {
 
     @Override
     public Film getFilmById(Integer id) {
-        if (filmStorage.getFilms().containsKey(id)) {
+        if (ifFilmExists(id)) {
             return filmStorage.getFilmById(id);
         } else {
             throw new UserNotFoundException(
@@ -105,7 +105,7 @@ public class FilmService implements FilmStorage {
 
     @Override
     public Film deleteFilmById(Integer id) {
-        if (filmStorage.getFilms().containsKey(id)) {
+        if (ifFilmExists(id)) {
             Film film = filmStorage.deleteFilmById(id);
             filmRating.deleteFilm(film);
             log.info(film.getName() + " was deleted");
@@ -121,5 +121,9 @@ public class FilmService implements FilmStorage {
         log.info("Films were deleted");
         filmRating.deleteFilms();
         return filmStorage.deleteFilms();
+    }
+
+    public boolean ifFilmExists(Integer id) {
+        return filmStorage.getFilms().containsKey(id);
     }
 }

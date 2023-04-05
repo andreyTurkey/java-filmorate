@@ -57,7 +57,7 @@ public class UserService implements UserStorage {
     }
 
     public List<User> getUserFriends(Integer userId) {
-        if (userStorage.getUsers().containsKey(userId)) {
+        if (ifUserExists(userId)) {
             User user = userStorage.getUserById(userId);
             List<User> userFriends = new ArrayList<>();
             try {
@@ -75,7 +75,7 @@ public class UserService implements UserStorage {
     }
 
     public List<User> getCommonFriends(Integer userId, Integer friendId) {
-        if (userStorage.getUsers().containsKey(userId) && userStorage.getUsers().containsKey(friendId)) {
+        if (ifUserExists(userId) && ifUserExists(friendId)) {
             User user = userStorage.getUserById(userId);
             User friend = userStorage.getUserById(friendId);
             List<Integer> commonFreindsId;
@@ -96,7 +96,7 @@ public class UserService implements UserStorage {
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
-        if (userStorage.getUsers().containsKey(userId) && userStorage.getUsers().containsKey(friendId)) {
+        if (ifUserExists(userId) && ifUserExists(friendId)) {
             User user = userStorage.getUserById(userId);
             User friend = userStorage.getUserById(friendId);
             List<User> users = new ArrayList<>();
@@ -165,7 +165,7 @@ public class UserService implements UserStorage {
 
     @Override
     public User getUserById(Integer id) {
-        if (userStorage.getUsers().containsKey(id)) {
+        if (ifUserExists(id)) {
             return userStorage.getUserById(id);
         } else {
             throw new UserNotFoundException(
@@ -175,7 +175,7 @@ public class UserService implements UserStorage {
 
     @Override
     public User deleteUserById(Integer id) {
-        if (userStorage.getUsers().containsKey(id)) {
+        if (ifUserExists(id)) {
             User user = userStorage.getUserById(id);
             userStorage.deleteUserById(id);
             return user;
@@ -189,5 +189,9 @@ public class UserService implements UserStorage {
     public List<User> deleteUsers() {
         List<User> deletedUsers = userStorage.deleteUsers();
         return deletedUsers;
+    }
+
+    public boolean ifUserExists(Integer userId) {
+        return userStorage.getUsers().containsKey(userId);
     }
 }

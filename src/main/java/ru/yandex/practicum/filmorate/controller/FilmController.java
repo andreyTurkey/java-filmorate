@@ -14,13 +14,12 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.*;
 
-@Validated
 @RestController
 @Slf4j
 @RequestMapping("/films")
 public class FilmController {
 
-    FilmService filmService;
+    private FilmService filmService;
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -47,7 +46,7 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getFilmByRating(@RequestParam(defaultValue = "10", required = false) Integer count) {
+    public List<Film> getFilmByRating(@RequestParam(defaultValue = "10") Integer count) {
         log.debug("Request films was executed.");
         return filmService.getFilmByRating(count);
     }

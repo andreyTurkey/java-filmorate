@@ -38,8 +38,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        List<Film> allFilms = new ArrayList<>(films.values());
-        return allFilms;
+        return new ArrayList<>(films.values());
     }
 
     @Override
@@ -49,9 +48,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film deleteFilmById(Integer id) {
-            Film film = films.get(id);
-            films.remove(id);
-            return film;
+            return films.remove(id);
     }
 
     @Override
