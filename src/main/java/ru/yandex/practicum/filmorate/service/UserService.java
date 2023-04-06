@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,13 +13,14 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 @Slf4j
 public class UserService implements UserStorage {
 
-    private UserStorage userStorage;
+    final UserStorage userStorage;
 
-    private int count;
+    int count;
 
     @Autowired
     public UserService(InMemoryUserStorage userStorage) {
@@ -26,113 +29,76 @@ public class UserService implements UserStorage {
     }
 
     public User addFriend(Integer userId, Integer friendId) {
-        if (userStorage.getUsers().containsKey(userId) && userStorage.getUsers().containsKey(friendId)) {
-            User user = userStorage.getUserById(userId);
-            User friend = userStorage.getUserById(friendId);
-            try {
-                user.getFriends().add(friendId);
-            } catch (NullPointerException ex) {
-                Set<Integer> friends = new HashSet<>();
-
-                friends.add(friendId);
-
-                user.setFriends(friends);
-            }
-            try {
-                friend.getFriends().add(userId);
-            } catch (NullPointerException ex) {
-                Set<Integer> friends = new HashSet<>();
-
-                friends.add(userId);
-
-                friend.setFriends(friends);
-            }
-            userStorage.update(user);
-
-            userStorage.update(friend);
-            return user;
-        } else {
-            throw new UserNotFoundException(String.format("Пользователя %d не существует.", friendId));
+        if (!(userExistsById(userId) && userExistsById(friendId))) {
+            throw new UserNotFoundException
+                    (String.format("Пользователя %d не существует.", friendId));
         }
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+
+        user.addFriend(friendId);
+        friend.addFriend(userId);
+
+        userStorage.update(user);
+        userStorage.update(friend);
+
+        return user;
     }
 
     public List<User> getUserFriends(Integer userId) {
-        if (ifUserExists(userId)) {
-            User user = userStorage.getUserById(userId);
-            List<User> userFriends = new ArrayList<>();
-            try {
-                Set<Integer> userFreindsId = user.getFriends();
-                for (Integer id : userFreindsId) {
-                    userFriends.add(userStorage.getUsers().get(id));
-                }
-                return userFriends;
-            } catch (NullPointerException ex) {
-                return userFriends;
-            }
-        } else {
+        if (!userExistsById(userId)) {
             throw new UserNotFoundException(String.format("Проверьте ID пользователей"));
         }
+        User user = userStorage.getUserById(userId);
+        List<User> userFriends = new ArrayList<>();
+
+        Set<Integer> userFreindsId = user.getFriends();
+        for (Integer id : userFreindsId) {
+            userFriends.add(userStorage.getUserById(id));
+        }
+        return userFriends;
     }
 
     public List<User> getCommonFriends(Integer userId, Integer friendId) {
-        if (ifUserExists(userId) && ifUserExists(friendId)) {
-            User user = userStorage.getUserById(userId);
-            User friend = userStorage.getUserById(friendId);
-            List<Integer> commonFreindsId;
-            List<User> commonFreinds = new ArrayList<>();
-            try {
-                commonFreindsId = user.getFriends().stream().filter(t -> friend.getFriends().contains(t))
-                        .collect(Collectors.toList());
-                for (Integer id : commonFreindsId) {
-                    commonFreinds.add(userStorage.getUsers().get(id));
-                }
-                return commonFreinds;
-            } catch (NullPointerException ex) {
-                return commonFreinds;
-            }
-        } else {
+        if (!userExistsById(userId) && !userExistsById(friendId)) {
             throw new UserNotFoundException(String.format("Проверьте ID пользователей"));
         }
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        List<Integer> commonFreindsId;
+        List<User> commonFreinds = new ArrayList<>();
+
+        commonFreindsId = user.getFriends().stream().filter(t -> friend.getFriends().contains(t))
+                .collect(Collectors.toList());
+
+        for (Integer id : commonFreindsId) {
+            commonFreinds.add(userStorage.getUserById(id));
+        }
+        return commonFreinds;
     }
 
     public List<User> deleteFriend(Integer userId, Integer friendId) {
-        if (ifUserExists(userId) && ifUserExists(friendId)) {
-            User user = userStorage.getUserById(userId);
-            User friend = userStorage.getUserById(friendId);
-            List<User> users = new ArrayList<>();
-            try {
-                Set<Integer> friendsId = user.getFriends();
-
-                friendsId.remove(friendId);
-
-                user.setFriends(friendsId);
-
-                userStorage.update(user);
-
-                users.add(userStorage.getUserById(userId));
-
-                Set<Integer> otherFriendsId = friend.getFriends();
-
-                otherFriendsId.remove(userId);
-
-                friend.setFriends(otherFriendsId);
-
-                userStorage.update(friend);
-
-                users.add(userStorage.getUserById(friendId));
-
-                return users;
-            } catch (NullPointerException ex) {
-                return users;
-            }
-        } else {
+        if (!userExistsById(userId) && !userExistsById(friendId)) {
             throw new UserNotFoundException(String.format("Проверьте ID пользователей"));
         }
-    }
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
 
-    @Override
-    public Map<Integer, User> getUsers() {
-        return userStorage.getUsers();
+        List<User> users = new ArrayList<>();
+
+        user.deleteFriend(friendId);
+
+        userStorage.update(user);
+
+        users.add(userStorage.getUserById(userId));
+
+        friend.deleteFriend(userId);
+
+        userStorage.update(friend);
+
+        users.add(userStorage.getUserById(friendId));
+
+        return users;
     }
 
     @Override
@@ -148,7 +114,7 @@ public class UserService implements UserStorage {
 
     @Override
     public User update(User user) {
-        if (!userStorage.getUsers().containsKey(user.getId())) {
+        if (!userExistsById(user.getId())) {
             log.error(user.getName() + " user doesn't exist.");
             throw new UserNotFoundException("Check ID field.");
         }
@@ -165,7 +131,7 @@ public class UserService implements UserStorage {
 
     @Override
     public User getUserById(Integer id) {
-        if (ifUserExists(id)) {
+        if (userExistsById(id)) {
             return userStorage.getUserById(id);
         } else {
             throw new UserNotFoundException(
@@ -175,14 +141,13 @@ public class UserService implements UserStorage {
 
     @Override
     public User deleteUserById(Integer id) {
-        if (ifUserExists(id)) {
-            User user = userStorage.getUserById(id);
-            userStorage.deleteUserById(id);
-            return user;
-        } else {
+        if (!userExistsById(id)) {
             throw new UserNotFoundException(
                     String.format("Пользователя  %d не существует.", id));
         }
+        User user = userStorage.getUserById(id);
+        userStorage.deleteUserById(id);
+        return user;
     }
 
     @Override
@@ -191,7 +156,8 @@ public class UserService implements UserStorage {
         return deletedUsers;
     }
 
-    public boolean ifUserExists(Integer userId) {
-        return userStorage.getUsers().containsKey(userId);
+    @Override
+    public boolean userExistsById(Integer id) {
+        return userStorage.userExistsById(id);
     }
 }

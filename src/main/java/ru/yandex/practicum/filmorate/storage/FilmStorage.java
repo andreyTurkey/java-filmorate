@@ -3,21 +3,20 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-import java.util.Map;
 
 public interface FilmStorage {
 
-    public Film create(Film film);
+    Film create(Film film);
 
-    public Film update(Film film);
+    Film update(Film film);
 
-    public Map<Integer, Film> getFilms();
+    List<Film> getAllFilms();
 
-    public List<Film> getAllFilms();
+    Film getFilmById(Integer id);
 
-    public Film getFilmById(Integer id);
+    Film deleteFilmById(Integer id);
 
-    public Film deleteFilmById(Integer id);
+    List<Film> deleteFilms();
 
-    public List<Film> deleteFilms();
+    boolean filmExistsById(Integer filmId);
 }

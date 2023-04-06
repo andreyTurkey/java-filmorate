@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,21 +20,55 @@ public class FilmService implements FilmStorage {
 
     final FilmStorage filmStorage;
 
+    List<Film> filmsRating;
+
     int count;
 
-    final FilmRating filmRating;
-
     @Autowired
-    public FilmService(InMemoryFilmStorage filmStorage, FilmRating filmRating) {
+    public FilmService(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
         count = 1;
-        this.filmRating = filmRating;
+        filmsRating = new ArrayList<>();
+    }
+
+    protected Comparator<Film> comparator = new Comparator<Film>() {
+        @Override
+        public int compare(Film o1, Film o2) {
+            return o2.getLikes().size() - o1.getLikes().size();
+        }
+    };
+
+    public void setFilmsRating(List<Film> filmsRating) {
+        this.filmsRating = filmsRating;
+    }
+
+    public void addRatingFilm(Film film) {
+        filmsRating.add(film);
+        updateRating();
+    }
+
+    public void deleteFilmsRating() {
+        filmsRating.clear();
+    }
+
+    public List<Film> getFilmByRating(Integer count) {
+        return filmsRating.stream().limit(count).collect(Collectors.toList());
+    }
+
+    public void deleteFilmRating(Film film) {
+        setFilmsRating(filmsRating.stream().filter(i -> !(i.getId() == film.getId())).collect(Collectors.toList()));
+    }
+
+    public void updateRating() {
+        filmsRating.sort(comparator);
+        log.info(String.format("%s", filmsRating));
     }
 
     public Film addLike(Integer filmId, Integer userId) {
+        if (userId <= 0) throw new UserNotFoundException(String.format("Пользователя %d  не существует", userId));
         Film film = filmStorage.getFilmById(filmId);
 
-        film.getLikes().add(userId);
+        film.addLike(userId);
 
         update(film);
         return film;
@@ -43,35 +77,27 @@ public class FilmService implements FilmStorage {
     @Override
     public Film create(Film film) {
         film.setId(count);
-        film.setLikes(new HashSet<>());
         filmStorage.create(film);
-        filmRating.add(film);
+        addRatingFilm(film);
         count++;
         return film;
     }
 
     @Override
     public Film update(Film film) {
-        if (!ifFilmExists(film.getId())) {
+        if (!filmExistsById(film.getId())) {
             log.error(film.getName() + " film doesn't exist.");
             throw new UserNotFoundException("Check ID field.");
         }
-        if (film.getLikes() == null) film.setLikes(new HashSet<>());
-
-        filmRating.deleteFilm(film);
+        deleteFilmRating(film);
 
         filmStorage.update(film);
 
-        filmRating.add(film);
+        addRatingFilm(film);
 
-        filmRating.updateRating();
+        updateRating();
         log.info(film.getName() + " was updated");
         return film;
-    }
-
-    @Override
-    public Map<Integer, Film> getFilms() {
-        return filmStorage.getFilms();
     }
 
     @Override
@@ -81,7 +107,7 @@ public class FilmService implements FilmStorage {
 
     @Override
     public Film getFilmById(Integer id) {
-        if (ifFilmExists(id)) {
+        if (filmExistsById(id)) {
             return filmStorage.getFilmById(id);
         } else {
             throw new UserNotFoundException(
@@ -89,15 +115,11 @@ public class FilmService implements FilmStorage {
         }
     }
 
-    public List<Film> getFilmByRating(Integer count) {
-        return filmRating.getFilmRating(count);
-    }
-
     public Film deleteLike(Integer filmId, Integer userId) {
         if (userId <= 0) throw new UserNotFoundException(String.format("Пользователя %d  не существует", userId));
         Film film = filmStorage.getFilmById(filmId);
 
-        film.getLikes().remove(userId);
+        film.deleteLike(userId);
 
         update(film);
         return film;
@@ -105,25 +127,25 @@ public class FilmService implements FilmStorage {
 
     @Override
     public Film deleteFilmById(Integer id) {
-        if (ifFilmExists(id)) {
-            Film film = filmStorage.deleteFilmById(id);
-            filmRating.deleteFilm(film);
-            log.info(film.getName() + " was deleted");
-            return film;
-        } else {
+        if (!filmExistsById(id)) {
             throw new UserNotFoundException(
                     String.format("Фильм  %d не существует.", id));
         }
+        Film film = filmStorage.deleteFilmById(id);
+        deleteFilmRating(film);
+        log.info(film.getName() + " was deleted");
+        return film;
     }
 
     @Override
     public List<Film> deleteFilms() {
         log.info("Films were deleted");
-        filmRating.deleteFilms();
+        deleteFilmsRating();
         return filmStorage.deleteFilms();
     }
 
-    public boolean ifFilmExists(Integer id) {
-        return filmStorage.getFilms().containsKey(id);
+    @Override
+    public boolean filmExistsById(Integer filmId) {
+        return filmStorage.filmExistsById(filmId);
     }
 }

@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,12 +15,13 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.*;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
 @Slf4j
 @RequestMapping("/films")
 public class FilmController {
 
-    private FilmService filmService;
+    FilmService filmService;
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -65,14 +68,12 @@ public class FilmController {
 
     @DeleteMapping("delete")
     public List<Film> deleteFilms() {
-        filmService.deleteFilms();
-        return new ArrayList<>(filmService.getFilms().values());
+        return filmService.deleteFilms();
     }
 
     @DeleteMapping("delete/{id}")
-    public List<Film> deleteFilmById(@PathVariable Integer id) {
-        filmService.deleteFilmById(id);
-        return new ArrayList<>(filmService.getFilms().values());
+    public Film deleteFilmById(@PathVariable Integer id) {
+        return filmService.deleteFilmById(id);
     }
 
     @PutMapping(value = "{id}/like/{userId}")

@@ -20,10 +20,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         films = new HashMap<>();
     }
 
-    public Map<Integer, Film> getFilms() {
-        return films;
-    }
-
     @Override
     public Film create(Film film) {
         films.put(film.getId(), film);
@@ -54,7 +50,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> deleteFilms() {
         films.clear();
-        List<Film> emptyFilms = new ArrayList<>(films.values());
-        return emptyFilms;
+        return new ArrayList<>();
+    }
+
+    @Override
+    public boolean filmExistsById(Integer filmId) {
+        return films.containsKey(filmId);
     }
 }

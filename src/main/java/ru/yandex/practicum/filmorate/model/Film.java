@@ -8,6 +8,7 @@ import javax.validation.constraints.*;
 import java.time.*;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 @Builder
@@ -33,5 +34,13 @@ public class Film {
     @Positive(message = "DURATION should be positive.")
     int duration;
 
-    private Set<Integer> likes;
+    final Set<Integer> likes = new TreeSet<>();
+
+    public void addLike(Integer userId) {
+        likes.add(userId);
+    }
+
+    public void deleteLike(Integer userId) {
+        likes.remove(userId);
+    }
 }

@@ -8,6 +8,7 @@ import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -31,5 +32,13 @@ public class User {
     @Past(message = "BIRTHDAY can't be in the future.")
     LocalDate birthday;
 
-    Set<Integer> friends;
+    final Set<Integer> friends = new HashSet<>();
+
+    public void addFriend(Integer friendId) {
+        friends.add(friendId);
+    }
+
+    public void deleteFriend(Integer friendId) {
+        friends.remove(friendId);
+    }
 }
