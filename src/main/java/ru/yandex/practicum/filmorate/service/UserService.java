@@ -30,8 +30,8 @@ public class UserService implements UserStorage {
 
     public User addFriend(Integer userId, Integer friendId) {
         if (!(userExistsById(userId) && userExistsById(friendId))) {
-            throw new UserNotFoundException
-                    (String.format("Пользователя %d не существует.", friendId));
+            throw new UserNotFoundException(
+                    String.format("Пользователя %d не существует.", friendId));
         }
         User user = userStorage.getUserById(userId);
         User friend = userStorage.getUserById(friendId);
