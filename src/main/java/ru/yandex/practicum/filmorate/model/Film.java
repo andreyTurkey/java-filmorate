@@ -18,21 +18,15 @@ public class Film {
 
     int id;
 
-    @NonNull
-    @NotBlank(message = "NAME can't be empty or consist of spaces.")
-    String name;
+    @NonNull @NotBlank(message = "NAME can't be empty or consist of spaces.") String name;
 
-    @NonNull
-    @Size(max = 200, message = "Size a description should be <= 200 characters.")
-    String description;
+    @NonNull @Size(max = 200, message = "Size a description should be <= 200 characters.") String description;
 
     @NonNull
     @MinimumDate
     LocalDate releaseDate;
 
-    @NonNull
-    @Positive(message = "DURATION should be positive.")
-    int duration;
+    @NonNull @Positive(message = "DURATION should be positive.") int duration;
 
     final Set<Integer> likes = new TreeSet<>();
 

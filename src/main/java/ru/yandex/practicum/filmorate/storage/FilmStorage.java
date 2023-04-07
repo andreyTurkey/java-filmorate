@@ -18,5 +18,5 @@ public interface FilmStorage {
 
     List<Film> deleteFilms();
 
-    boolean filmExistsById(Integer filmId);
+    void filmExistsById(Integer filmId);
 }

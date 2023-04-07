@@ -18,5 +18,5 @@ public interface UserStorage {
 
     List<User> deleteUsers();
 
-    boolean userExistsById(Integer id);
+    void userExistsById(Integer id);
 }

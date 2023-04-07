@@ -21,7 +21,7 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
 
-    FilmService filmService;
+    private FilmService filmService;
 
     @Autowired
     public FilmController(FilmService filmService) {
