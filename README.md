@@ -1,3 +1,3 @@
 # java-filmorate
 Template repository for Filmorate project.
-![Diagram](/diagram.png)
+<img alt=”альтернативный текст” src=diagram.png width =”” height=””>
