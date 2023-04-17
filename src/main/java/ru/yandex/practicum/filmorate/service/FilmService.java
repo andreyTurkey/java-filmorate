@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ru.yandex.practicum.filmorate.enumCatalog.Genre;
+import ru.yandex.practicum.filmorate.enumCatalog.Rating;
+import ru.yandex.practicum.filmorate.exception.InvalidDataException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -129,6 +132,42 @@ public class FilmService {
         log.info("Films were deleted");
         deleteFilmsRating();
         return filmStorage.deleteFilms();
+    }
+
+    public Genre getGenre(String filmGenre) throws InvalidDataException {
+        switch (filmGenre) {
+            case "comedy":
+                return Genre.COMEDY;
+            case "drama":
+                return Genre.DRAMA;
+            case "cartoon":
+                return Genre.CARTOON;
+            case "thriller":
+                return Genre.THRILLER;
+            case "documentary":
+                return Genre.DOCUMENTARY;
+            case "action":
+                return Genre.ACTION;
+            default:
+                throw  new InvalidDataException("Жанр не существует.");
+        }
+    }
+
+    public Rating getRating(String filmRating) throws InvalidDataException {
+        switch (filmRating) {
+            case "g":
+                return Rating.G;
+            case "pg":
+                return Rating.PG;
+            case "pg-13":
+                return Rating.PG_13;
+            case "r":
+                return Rating.R;
+            case "nc-17":
+                return Rating.NC_17;
+            default:
+                throw  new InvalidDataException("Жанр не существует.");
+        }
     }
 
     private void filmExistsById(Integer filmId) {
