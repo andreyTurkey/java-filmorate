@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -41,19 +42,28 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User deleteUserById(Integer id) {
-        return users.remove(id);
-    }
-
-    @Override
-    public List<User> deleteUsers() {
-        users.clear();
-        return new ArrayList<>();
-    }
-
-    @Override
     public void userExistsById(Integer id) {
         if (!users.containsKey(id))
             throw new UserNotFoundException(String.format("Пользователя ID = %d не существует.", id));
+    }
+
+    @Override
+    public User addFriend(Integer userId, Integer friendId) {
+        return null;
+    }
+
+    @Override
+    public List<User> deleteFriend(Integer userId, Integer friendId) {
+        return null;
+    }
+
+    @Override
+    public List<User> getUserFriends(Integer userId) {
+        return null;
+    }
+
+    @Override
+    public List<User> getCommonFriends(Integer userId, Integer friendId) {
+        return null;
     }
 }
