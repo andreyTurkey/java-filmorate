@@ -2,13 +2,16 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.enumCatalog.FriendStatus;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -33,6 +36,8 @@ public class User {
     LocalDate birthday;
 
     final Set<Integer> friends = new HashSet<>();
+
+    final Map<Integer, FriendStatus> friendStatus = new HashMap<>();
 
     public void addFriend(Integer friendId) {
         friends.add(friendId);
