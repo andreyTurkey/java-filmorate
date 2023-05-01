@@ -36,12 +36,14 @@ class FilmorateApplicationTests {
     @BeforeEach
     public void createTables() {
         userStorage.createTablesUser();
+
         filmStorage.createTablesFilm();
     }
 
     @AfterEach
     public void deleteTables() {
         filmStorage.clearTablesFilm();
+        git
         userStorage.clearTablesUser();
     }
 
