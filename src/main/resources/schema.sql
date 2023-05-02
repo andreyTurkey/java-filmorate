@@ -66,7 +66,7 @@ create table IF NOT EXISTS genres
 
 create table IF NOT EXISTS genre
 (
-    film_id INTEGER NOT NULL REFERENCES film (id),
-    genre_id INTEGER NOT NULL REFERENCES film (id)
+    film_id INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL
 );
 
