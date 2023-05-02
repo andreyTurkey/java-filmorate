@@ -86,7 +86,6 @@ public class FilmDbStorage implements FilmStorage {
                         film.getId(),
                         genre.getId());
             }
-            log.debug(genres.size() + " количество жанров у фильма");
         }
     }
 
