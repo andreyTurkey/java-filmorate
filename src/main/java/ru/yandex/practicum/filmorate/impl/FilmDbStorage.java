@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,6 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 @Qualifier("FilmDbStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -84,6 +86,7 @@ public class FilmDbStorage implements FilmStorage {
                         film.getId(),
                         genre.getId());
             }
+            log.debug(genres.size() + " количество жанров у фильма");
         }
     }
 
