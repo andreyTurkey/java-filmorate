@@ -74,18 +74,16 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void updateFilmGenre(Film film) {
         String gernreDeleteSqlQuery = "DELETE FROM genre WHERE film_id = ?";
-        jdbcTemplate.update(gernreDeleteSqlQuery,
-                film.getId());
+        jdbcTemplate.update(gernreDeleteSqlQuery, film.getId());
         List<Genre> genres = film.getGenres();
-        if (genres != null) {
-            for (int i = 0; i < genres.size(); i++) {
-                Genre genre = genres.get(i);
-                String genreInsertSqlQuery = "INSERT INTO genre(film_id, genre_id) " +
-                        "values (?, ?)";
-                jdbcTemplate.update(genreInsertSqlQuery,
-                        film.getId(),
-                        genre.getId());
-            }
+        if (genres == null) return;
+        for (int i = 0; i < genres.size(); i++) {
+            Genre genre = genres.get(i);
+            String genreInsertSqlQuery = "INSERT INTO genre(film_id, genre_id) " +
+                    "values (?, ?)";
+            jdbcTemplate.update(genreInsertSqlQuery,
+                    film.getId(),
+                    genre.getId());
         }
     }
 
