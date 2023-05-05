@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.*;
 
@@ -34,7 +32,6 @@ public class FilmService {
     public List<Film> getFilmByRating(Integer count) {
         return filmStorage.getFilmByRating(count);
     }
-
 
     public Film addLike(Integer filmId, Integer userId) {
         return filmStorage.addLike(filmId, userId);
@@ -61,21 +58,5 @@ public class FilmService {
 
     public Film deleteLike(Integer filmId, Integer userId) {
         return filmStorage.deleteLike(filmId, userId);
-    }
-
-    public Genre getGenreByIdById(Integer id) {
-        return filmStorage.getGenreById(id);
-    }
-
-    public List<Genre> getAllGenres() {
-        return filmStorage.getAllGenres();
-    }
-
-    public Rating getRatingByIdById(Integer id) {
-        return filmStorage.getRatingById(id);
-    }
-
-    public List<Rating> getAllRatings() {
-        return filmStorage.getAllRating();
     }
 }

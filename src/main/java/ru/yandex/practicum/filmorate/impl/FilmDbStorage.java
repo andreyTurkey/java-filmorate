@@ -1,17 +1,21 @@
 package ru.yandex.practicum.filmorate.impl;
-
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.GenreStorage;
+import ru.yandex.practicum.filmorate.dao.MpaStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.extractor.FilmsExtractor;
+import ru.yandex.practicum.filmorate.extractor.SingleFilmExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,15 +24,31 @@ import java.util.List;
 @Slf4j
 @Component
 @Qualifier("FilmDbStorage")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmDbStorage implements FilmStorage {
 
-    private final JdbcTemplate jdbcTemplate;
-    private UserStorage userStorage;
+    final JdbcTemplate jdbcTemplate;
+
+    final UserStorage userStorage;
+
+    final MpaStorage mpaStorage;
+
+    final GenreStorage genreStorage;
+
+    final FilmsExtractor filmsExtractor;
+
+    final SingleFilmExtractor singleFilmExtractor;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("UserDbStorage") UserStorage userStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("UserDbStorage") UserStorage userStorage,
+    MpaStorage mpaStorage, GenreStorage genreStorage, FilmsExtractor filmsExtractor
+    , SingleFilmExtractor singleFilmExtractor) {
         this.jdbcTemplate = jdbcTemplate;
         this.userStorage = userStorage;
+        this.mpaStorage = mpaStorage;
+        this.genreStorage = genreStorage;
+        this.filmsExtractor = filmsExtractor;
+        this.singleFilmExtractor = singleFilmExtractor;
     }
 
     @Override
@@ -45,7 +65,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 ratingId
         );
-        updateFilmGenre(film);
+        genreStorage.updateFilmGenre(film);
         return getFilmById(film.getId());
     }
 
@@ -67,74 +87,80 @@ public class FilmDbStorage implements FilmStorage {
                 ratingId,
                 film.getId());
 
-        updateFilmGenre(film);
+        genreStorage.updateFilmGenre(film);
         return getFilmById(film.getId());
     }
 
     @Override
-    public void updateFilmGenre(Film film) {
-        String gernreDeleteSqlQuery = "DELETE FROM genre WHERE film_id = ?";
-        jdbcTemplate.update(gernreDeleteSqlQuery, film.getId());
-        List<Genre> genres = film.getGenres();
-        if (genres == null) return;
-        for (int i = 0; i < genres.size(); i++) {
-            Genre genre = genres.get(i);
-            String genreInsertSqlQuery = "INSERT INTO genre(film_id, genre_id) " +
-                    "values (?, ?)";
-            jdbcTemplate.update(genreInsertSqlQuery,
-                    film.getId(),
-                    genre.getId());
-        }
-    }
-
-    @Override
     public List<Film> getAllFilms() {
-        String sqlQuery = "SELECT id, name, description, duration, releaseDate, mpa FROM film";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
+        String sqlQuery = "SELECT DISTINCT f.id," +
+                "       f.name , " +
+                "       f.description, " +
+                "       f.duration, " +
+                "       f.releaseDate, " +
+                "       f.mpa, " +
+                "       gs.id AS genre_id, " +
+                "       gs.name AS genre_name " +
+                "FROM film AS f " +
+                "LEFT OUTER JOIN genre AS g ON  f.id = g.film_id " +
+                "LEFT OUTER JOIN genres AS gs ON g.genre_id = gs.id";
+        return jdbcTemplate.query(sqlQuery, filmsExtractor);
     }
 
-    @Override
-    public List<Rating> getAllRating() {
-        String sqlQuery = "SELECT id, name, description FROM mpa";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToRating);
-    }
-
-    @Override
-    public Rating getRatingById(Integer id) {
-        ratingExistsById(id);
-        String sqlQuery = "SELECT id, name, description " +
-                " FROM mpa WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToRating, id);
-    }
+    /*@Override
+    public Film getFilmById(Integer id) {
+        filmExistsById(id);
+        *//*String sqlQuery = "SELECT id, name, description, duration, releaseDate, mpa " +
+                "FROM film WHERE id = ?";
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);*//*
+        String sqlQuery = "SELECT DISTINCT f.id," +
+                "       f.name , " +
+                "       f.description, " +
+                "       f.duration, " +
+                "       f.releaseDate, " +
+                "       f.mpa, " +
+                "       gs.id AS genre_id, " +
+                "       gs.name AS genre_name " +
+                "FROM film AS f " +
+                "LEFT OUTER JOIN genre AS g ON  f.id = g.film_id " +
+                "LEFT OUTER JOIN genres AS gs ON g.genre_id = gs.id " +
+                "WHERE f.id = ?";
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
+    }*/
 
     @Override
     public Film getFilmById(Integer id) {
         filmExistsById(id);
-        String sqlQuery = "SELECT id, name, description, duration, releaseDate, mpa " +
+        /*String sqlQuery = "SELECT id, name, description, duration, releaseDate, mpa " +
                 "FROM film WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
-    }
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);*/
+        String sqlQuery = "SELECT DISTINCT f.id," +
+                "       f.name , " +
+                "       f.description, " +
+                "       f.duration, " +
+                "       f.releaseDate, " +
+                "       f.mpa, " +
+                "       gs.id AS genre_id, " +
+                "       gs.name AS genre_name " +
+                "FROM film AS f " +
+                "LEFT OUTER JOIN genre AS g ON  f.id = g.film_id " +
+                "LEFT OUTER JOIN genres AS gs ON g.genre_id = gs.id " +
+                "WHERE f.id = ?";
+        return jdbcTemplate.query(sqlQuery, singleFilmExtractor, id);
 
-    @Override
-    public List<Genre> getGenresByFilmId(Integer id) {
-        String sqlQuery = "SELECT DISTINCT genre_id, name FROM genre AS g " +
-                "INNER JOIN genres AS gs ON g.genre_id = gs.id  " +
-                "WHERE film_id = ?";
-        return this.jdbcTemplate.query(
-                sqlQuery,
-                (resultSet, rowNum) -> {
-                    return Genre.builder()
-                            .id(resultSet.getInt("genre_id"))
-                            .name(resultSet.getString("name"))
-                            .build();
-
-                }, id);
     }
 
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Integer ratingId = resultSet.getInt("mpa");
-        Rating rating = getRatingById(ratingId);
+        Rating rating = mpaStorage.getRatingById(ratingId);
 
+        List<Genre> genres = new ArrayList<>();
+        if (!resultSet.getString("name").equals("")) {
+            genres.add(Genre.builder()
+                    .id(resultSet.getInt("genre_id"))
+                    .name(resultSet.getString("genre_name"))
+                    .build());
+        }
         return Film.builder()
                 .id(resultSet.getInt("id"))
                 .name(resultSet.getString("name"))
@@ -142,37 +168,8 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(resultSet.getInt("duration"))
                 .releaseDate(resultSet.getDate("releaseDate").toLocalDate())
                 .mpa(rating)
-                .genres(getGenresByFilmId(resultSet.getInt("id")))
+                .genres(genres)
                 .build();
-    }
-
-    private Rating mapRowToRating(ResultSet resultSet, int rowNum) throws SQLException {
-        return Rating.builder()
-                .id(resultSet.getInt("id"))
-                .name(resultSet.getString("name"))
-                .description(resultSet.getString("description"))
-                .build();
-    }
-
-    private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
-        return Genre.builder()
-                .id(resultSet.getInt("id"))
-                .name(resultSet.getString("name"))
-                .build();
-    }
-
-    @Override
-    public List<Genre> getAllGenres() {
-        String sqlQuery = "SELECT id, name FROM genres";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToGenre);
-    }
-
-    @Override
-    public Genre getGenreById(Integer id) {
-        genreExistsById(id);
-        String sqlQuery = "SELECT id, name " +
-                " FROM genres WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id);
     }
 
     @Override
@@ -186,32 +183,6 @@ public class FilmDbStorage implements FilmStorage {
                 });
         if (!ids.contains(filmId))
             throw new FilmNotFoundException(String.format("Фильма с ID = %d не существует. Проверьте ID.", filmId));
-    }
-
-    @Override
-    public void genreExistsById(Integer genreId) {
-        List<Integer> ids = this.jdbcTemplate.query(
-                "SELECT id FROM genres",
-                (resultSet, rowNum) -> {
-                    Integer id;
-                    id = resultSet.getInt("id");
-                    return id;
-                });
-        if (!ids.contains(genreId))
-            throw new FilmNotFoundException(String.format("Жанра с ID = %d не существует. Проверьте ID.", genreId));
-    }
-
-    @Override
-    public void ratingExistsById(Integer ratingId) {
-        List<Integer> ids = this.jdbcTemplate.query(
-                "SELECT id FROM mpa",
-                (resultSet, rowNum) -> {
-                    Integer id;
-                    id = resultSet.getInt("id");
-                    return id;
-                });
-        if (!ids.contains(ratingId))
-            throw new FilmNotFoundException(String.format("Рейтинга с ID = %d не существует. Проверьте ID.", ratingId));
     }
 
     @Override
@@ -255,27 +226,5 @@ public class FilmDbStorage implements FilmStorage {
             mostPopular.add(film);
         }
         return mostPopular;
-    }
-
-    public void clearTablesFilm() {
-        jdbcTemplate.update("DROP TABLE IF EXISTS film CASCADE");
-        jdbcTemplate.update("DROP TABLE IF EXISTS likes CASCADE");
-    }
-
-    public void createTablesFilm() {
-        jdbcTemplate.update("create table IF NOT EXISTS film " +
-                "( " +
-                "    id INTEGER  GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, " +
-                "    name varchar NOT NULL, " +
-                "    description varchar NOT NULL, " +
-                "    duration INTEGER NOT NULL, " +
-                "    releaseDate date NOT NULL, " +
-                "    mpa INTEGER REFERENCES mpa (id) " +
-                ")");
-        jdbcTemplate.update("create table IF NOT EXISTS likes " +
-                "( " +
-                "    film_id INTEGER NOT NULL REFERENCES film (id), " +
-                "    user_id INTEGER NOT NULL REFERENCES users (id) " +
-                ")");
     }
 }

@@ -54,16 +54,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void genreExistsById(Integer genreId) {
-
-    }
-
-    @Override
-    public void ratingExistsById(Integer ratingId) {
-
-    }
-
-    @Override
     public Film addLike(Integer filmId, Integer userId) {
         return null;
     }
@@ -75,36 +65,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmByRating(Integer count) {
-        return null;
-    }
-
-    @Override
-    public void updateFilmGenre(Film film) {
-
-    }
-
-    @Override
-    public List<Genre> getGenresByFilmId(Integer id) {
-        return null;
-    }
-
-    @Override
-    public Genre getGenreById(Integer id) {
-        return null;
-    }
-
-    @Override
-    public List<Genre> getAllGenres() {
-        return null;
-    }
-
-    @Override
-    public Rating getRatingById(Integer id) {
-        return null;
-    }
-
-    @Override
-    public List<Rating> getAllRating() {
         return null;
     }
 }

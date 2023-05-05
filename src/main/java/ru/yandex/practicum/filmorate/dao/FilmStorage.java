@@ -16,19 +16,19 @@ public interface FilmStorage {
 
     Film getFilmById(Integer id);
 
-    Genre getGenreById(Integer id);
+    //Genre getGenreById(Integer id);
 
-    List<Genre> getAllGenres();
+    //List<Genre> getAllGenres();
 
-    Rating getRatingById(Integer id);
+    //Rating getRatingById(Integer id);
 
-    List<Rating> getAllRating();
+    //List<Rating> getAllRating();
 
     void filmExistsById(Integer filmId);
 
-    void genreExistsById(Integer genreId);
+    //void genreExistsById(Integer genreId);
 
-    void ratingExistsById(Integer ratingId);
+    //void ratingExistsById(Integer ratingId);
 
     Film addLike(Integer filmId, Integer userId);
 
@@ -36,7 +36,7 @@ public interface FilmStorage {
 
     List<Film> getFilmByRating(Integer count);
 
-    void updateFilmGenre(Film film);
+    //void updateFilmGenre(Film film);
 
-    List<Genre> getGenresByFilmId(Integer id);
+    //List<Genre> getGenresByFilmId(Integer id);
 }

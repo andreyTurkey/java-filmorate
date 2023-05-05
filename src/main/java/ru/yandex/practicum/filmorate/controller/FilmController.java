@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -18,10 +19,13 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
 
-    private FilmService filmService;
+    final FilmService filmService;
+
+    final GenreService genreService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmService filmService, GenreService genreService) {
+        this.genreService = genreService;
         this.filmService = filmService;
     }
 
