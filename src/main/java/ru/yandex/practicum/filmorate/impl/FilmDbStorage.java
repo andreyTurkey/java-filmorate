@@ -41,8 +41,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Autowired
     public FilmDbStorage(JdbcTemplate jdbcTemplate, @Qualifier("UserDbStorage") UserStorage userStorage,
-    MpaStorage mpaStorage, GenreStorage genreStorage, FilmsExtractor filmsExtractor
-    , SingleFilmExtractor singleFilmExtractor) {
+    MpaStorage mpaStorage, GenreStorage genreStorage, FilmsExtractor filmsExtractor,
+                         SingleFilmExtractor singleFilmExtractor) {
         this.jdbcTemplate = jdbcTemplate;
         this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
