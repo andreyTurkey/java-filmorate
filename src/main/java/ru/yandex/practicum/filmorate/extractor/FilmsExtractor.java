@@ -36,15 +36,17 @@ public class FilmsExtractor implements ResultSetExtractor<List<Film>> {
         Map<Film, List<Genre>> data = new LinkedHashMap<>();
 
         while (resultSet.next()) {
-            Integer ratingId = resultSet.getInt("mpa");
-            Rating rating = mpaStorage.getRatingById(ratingId);
             Film film = Film.builder()
                     .id(resultSet.getInt("id"))
                     .name(resultSet.getString("name"))
                     .description(resultSet.getString("description"))
                     .duration(resultSet.getInt("duration"))
                     .releaseDate(resultSet.getDate("releaseDate").toLocalDate())
-                    .mpa(rating)
+                    .mpa(Rating.builder()
+                            .id(resultSet.getInt("mpa"))
+                            .name(resultSet.getString("mpa_name"))
+                            .description(resultSet.getString("mpa_description"))
+                            .build())
                     .build();
             if (data.containsKey(film)) {
                 data.get(film).add((Genre.builder()
@@ -64,11 +66,10 @@ public class FilmsExtractor implements ResultSetExtractor<List<Film>> {
         for (Film newFilm : data.keySet()) {
             if (data.get(newFilm).size() == 0) {
                 newFilm.setGenres(new ArrayList<>());
-                films.add(newFilm);
             } else {
                 newFilm.setGenres(data.get(newFilm));
-                films.add(newFilm);
             }
+            films.add(newFilm);
         }
         return films;
     }

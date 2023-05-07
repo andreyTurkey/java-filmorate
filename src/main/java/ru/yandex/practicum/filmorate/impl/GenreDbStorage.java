@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
@@ -94,14 +95,10 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public void genreExistsById(Integer genreId) {
-        List<Integer> ids = this.jdbcTemplate.query(
-                "SELECT id FROM genres",
-                (resultSet, rowNum) -> {
-                    Integer id;
-                    id = resultSet.getInt("id");
-                    return id;
-                });
-        if (!ids.contains(genreId))
+        SqlRowSet genreIdRows = jdbcTemplate.queryForRowSet("SELECT * FROM genres " +
+                "WHERE id = ?", genreId);
+        if (!genreIdRows.next()) {
             throw new FilmNotFoundException(String.format("Жанра с ID = %d не существует. Проверьте ID.", genreId));
+        }
     }
 }

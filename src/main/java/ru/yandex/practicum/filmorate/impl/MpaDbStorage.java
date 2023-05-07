@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MpaStorage;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
@@ -54,14 +55,10 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public void ratingExistsById(Integer ratingId) {
-        List<Integer> ids = this.jdbcTemplate.query(
-                "SELECT id FROM mpa",
-                (resultSet, rowNum) -> {
-                    Integer id;
-                    id = resultSet.getInt("id");
-                    return id;
-                });
-        if (!ids.contains(ratingId))
+        SqlRowSet ratingIdRows = jdbcTemplate.queryForRowSet("SELECT * FROM mpa " +
+                "WHERE id = ?", ratingId);
+        if (!ratingIdRows.next()) {
             throw new FilmNotFoundException(String.format("Рейтинга с ID = %d не существует. Проверьте ID.", ratingId));
+        }
     }
 }

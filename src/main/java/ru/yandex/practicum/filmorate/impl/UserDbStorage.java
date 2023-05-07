@@ -6,9 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.extractor.UserFriendsExtractor;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -96,15 +97,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void userExistsById(Integer id) {
-        List<Integer> ids = this.jdbcTemplate.query(
-                "SELECT id FROM users",
-                (resultSet, rowNum) -> {
-                    Integer userId;
-                    userId = resultSet.getInt("id");
-                    return userId;
-                });
-        if (!ids.contains(id))
-            throw new UserNotFoundException(String.format("Пользователя с ID = %d не существует. Проверьте ID.", id));
+        SqlRowSet usersIdRows = jdbcTemplate.queryForRowSet("SELECT * FROM users " +
+                "WHERE id = ?", id);
+        if (!usersIdRows.next()) {
+            throw new FilmNotFoundException(String.format("Жанра с ID = %d не существует. Проверьте ID.", id));
+        }
     }
 
     @Override
@@ -122,14 +119,9 @@ public class UserDbStorage implements UserStorage {
                 "                u.name AS friend_name, " +
                 "                u.email AS friend_email, " +
                 "                u.login AS friend_login, " +
-                "                u.birthday AS friend_birthday, " +
-                "                us.name AS user_name, " +
-                "                us.email AS user_email, " +
-                "                us.login AS user_login, " +
-                "                us.birthday AS user_birthday " +
+                "                u.birthday AS friend_birthday " +
                 "FROM friend AS f " +
                 "LEFT OUTER JOIN users AS u ON  f.friend_id = u.id " +
-                "LEFT OUTER JOIN users AS us ON f.user_id = us.id" +
                 " WHERE f.user_id = ?";
         return jdbcTemplate.query(getFriendsSqlQuery, userFriendsExtractor, userId);
     }
@@ -138,21 +130,13 @@ public class UserDbStorage implements UserStorage {
     public List<User> getCommonFriends(Integer userId, Integer friendId) {
         userExistsById(userId);
         userExistsById(friendId);
-        String getCommonFriendSqlQuery = "SELECT * " +
-                "FROM users " +
-                "WHERE id IN " +
-                "(SELECT u.friend_id " +
-                "FROM " +
-                "    (SELECT user_id, " +
-                "            friend_id " +
-                "     FROM friend " +
-                "     WHERE user_id = ?) AS u " +
-                "INNER JOIN ( " +
-                "    SELECT user_id, " +
-                "           friend_id " +
-                "    FROM friend " +
-                "WHERE user_id = ? " +
-                "    ) as f ON u.friend_id = f.friend_id);";
+        String getCommonFriendSqlQuery = "SELECT *\n" +
+                "FROM users\n" +
+                "WHERE id IN\n" +
+                "      (SELECT f.friend_id\n" +
+                "       FROM friend AS f\n" +
+                "    INNER JOIN friend  AS fr ON f.friend_id = fr.friend_id\n" +
+                "    WHERE f.user_id =? AND fr.user_id =?);";
         return jdbcTemplate.query(getCommonFriendSqlQuery, this::mapRowToUser, userId, friendId);
     }
 }
