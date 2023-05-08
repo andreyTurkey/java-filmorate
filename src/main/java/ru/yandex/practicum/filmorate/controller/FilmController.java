@@ -4,13 +4,11 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
-
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -21,10 +19,13 @@ import java.util.*;
 @RequestMapping("/films")
 public class FilmController {
 
-    private FilmService filmService;
+    final FilmService filmService;
+
+    final GenreService genreService;
 
     @Autowired
-    public FilmController(FilmService filmService) {
+    public FilmController(FilmService filmService, GenreService genreService) {
+        this.genreService = genreService;
         this.filmService = filmService;
     }
 
@@ -54,9 +55,9 @@ public class FilmController {
     }
 
     @PutMapping
-    public ResponseEntity<Film> update(@Valid @RequestBody Film film) {
-        filmService.update(film);
-        return ResponseEntity.ok(film);
+    public Film update(@Valid @RequestBody Film film) {
+        log.debug("Film was updated.");
+        return filmService.update(film);
     }
 
     @DeleteMapping(value = "{id}/like/{userId}")
@@ -64,16 +65,6 @@ public class FilmController {
                                            @PathVariable Integer userId) {
         filmService.deleteLike(id, userId);
         return ResponseEntity.ok(filmService.getFilmById(id));
-    }
-
-    @DeleteMapping("delete")
-    public List<Film> deleteFilms() {
-        return filmService.deleteFilms();
-    }
-
-    @DeleteMapping("delete/{id}")
-    public Film deleteFilmById(@PathVariable Integer id) {
-        return filmService.deleteFilmById(id);
     }
 
     @PutMapping(value = "{id}/like/{userId}")

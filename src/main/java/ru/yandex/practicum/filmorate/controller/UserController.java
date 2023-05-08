@@ -21,7 +21,7 @@ import java.util.*;
 @RequestMapping("/users")
 public class UserController {
 
-    private UserService userService;
+    final UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
@@ -58,7 +58,7 @@ public class UserController {
         return userService.getUserFriends(id);
     }
 
-    @PutMapping(value = "/{userId}/friends/{friendId}")
+    @PutMapping(value = "/{userId}/friends/{friendId}") // добавление друга
     public List<User> addFriend(@PathVariable Integer userId,
                                 @PathVariable Integer friendId) {
         userService.addFriend(userId, friendId);
@@ -77,15 +77,5 @@ public class UserController {
     public List<User> deleteFriend(@PathVariable Integer id,
                                    @PathVariable Integer friendId) {
         return userService.deleteFriend(id, friendId);
-    }
-
-    @DeleteMapping(value = "/{id}")
-    public User deleteUserById(@PathVariable Integer id) {
-        return userService.deleteUserById(id);
-    }
-
-    @DeleteMapping
-    public List<User> deleteUsers() {
-        return userService.deleteUsers();
     }
 }
